@@ -3,7 +3,6 @@ package dao;
 import models.RegularUser;
 import models.User;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

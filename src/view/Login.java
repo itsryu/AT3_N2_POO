@@ -10,7 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
 
-public class Login extends JFrame {
+public final class Login extends JFrame {
     private final JPanel loginPanel = new JPanel();
     private final JLabel loginLabel = new JLabel("Login");
 

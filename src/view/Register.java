@@ -1,7 +1,6 @@
 package view;
 
 import controller.UserController;
-import models.User;
 import utils.PasswordUtil;
 import utils.Util;
 
@@ -11,7 +10,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
 
-public class Register extends JFrame {
+public final class Register extends JFrame {
     private final JPanel registerPanel = new JPanel();
     private final JLabel registerLabel = new JLabel("Register");
 
@@ -124,7 +123,7 @@ public class Register extends JFrame {
         String password = String.valueOf(passwordField.getPassword());
         String confirmPass = String.valueOf(confirmPasswordField.getPassword());
 
-        UserController userController = new UserController();;
+        UserController userController = new UserController();
 
         if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please fill all fields", "Error", JOptionPane.ERROR_MESSAGE);
