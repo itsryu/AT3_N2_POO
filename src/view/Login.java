@@ -1,15 +1,23 @@
 package view;
 
+import controller.UserController;
+import models.User;
+import utils.PasswordUtil;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.security.NoSuchAlgorithmException;
 
 public class Login extends JFrame {
     private final JPanel loginPanel = new JPanel();
     private final JLabel loginLabel = new JLabel("Login");
 
+    private final JLabel usernameLabel = new JLabel("Username:");
     private final JTextField usernameField = new JTextField(20);
+
+    private final JLabel passwordLabel = new JLabel("Password:");
     private final JPasswordField passwordField = new JPasswordField(20);
 
     private final JButton loginButton = new JButton("Login");
@@ -30,7 +38,11 @@ public class Login extends JFrame {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                loginButtonActionPerformed(e);
+                try {
+                    loginButtonActionPerformed(e);
+                } catch (NoSuchAlgorithmException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
         });
 
@@ -64,7 +76,9 @@ public class Login extends JFrame {
                         .addGroup(panelLayout.createSequentialGroup()
                                 .addGap(150, 150, 150)
                                 .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
+                                        .addComponent(usernameLabel)
                                         .addComponent(usernameField)
+                                        .addComponent(passwordLabel)
                                         .addComponent(passwordField)
                                         .addComponent(loginLabel, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
                                         .addGroup(panelLayout.createSequentialGroup()
@@ -80,8 +94,12 @@ public class Login extends JFrame {
                                 .addGap(50, 50, 50)
                                 .addComponent(loginLabel)
                                 .addGap(30, 30, 30)
+                                .addComponent(usernameLabel)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(usernameField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addGap(18, 18, 18)
+                                .addComponent(passwordLabel)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(passwordField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addGap(30, 30, 30)
                                 .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
@@ -95,12 +113,19 @@ public class Login extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    private void loginButtonActionPerformed(ActionEvent e) {
-        String user = usernameField.getText();
-        String pass = String.valueOf(passwordField.getPassword());
+    private void loginButtonActionPerformed(ActionEvent e) throws NoSuchAlgorithmException {
+        String username = usernameField.getText();
+        String password = String.valueOf(passwordField.getPassword());
+        UserController userController = new UserController();
+        User user = userController.getUser(username);
 
-        System.out.println("User: " + user);
-        System.out.println("Password: " + pass);
+        if (user == null) {
+            JOptionPane.showMessageDialog(this, "Invalid username or password", "Error", JOptionPane.ERROR_MESSAGE);
+        } else if (!PasswordUtil.verifyPassword(user.getPassword(), password)) {
+            JOptionPane.showMessageDialog(this, "Invalid username or password", "Error", JOptionPane.ERROR_MESSAGE);
+        } else {
+            JOptionPane.showMessageDialog(this, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private void registerButtonActionPerformed(ActionEvent e) {
