@@ -32,7 +32,4 @@ public abstract class User {
     public String getEmail() {
         return this.email;
     }
-
-    public abstract boolean register();
-    public abstract boolean login();
 }

@@ -1,14 +1,18 @@
 package view;
 
+import controller.SessionController;
 import controller.UserController;
 import models.User;
 import utils.PasswordUtil;
+import utils.Util;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 public final class Login extends JFrame {
     private final JPanel loginPanel = new JPanel();
@@ -124,12 +128,34 @@ public final class Login extends JFrame {
         } else if (!PasswordUtil.verifyPassword(user.getPassword(), password)) {
             JOptionPane.showMessageDialog(this, "Invalid username or password", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
-            JOptionPane.showMessageDialog(this, "Login successful", "Success", JOptionPane.INFORMATION_MESSAGE);
+            String token = Util.generateToken();
+            Timestamp entryTimestamp = Timestamp.valueOf(LocalDateTime.now());
+
+            SessionController sessionController = new SessionController();
+
+            if(sessionController.login(user.getId(), token, entryTimestamp)) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        new Home(user).setVisible(true);
+                    }
+                });
+            } else {
+                JOptionPane.showMessageDialog(this, "Login failed: Internal error", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+
+            this.dispose();
         }
     }
 
     private void registerButtonActionPerformed(ActionEvent e) {
-        new Register().setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new Register().setVisible(true);
+            }
+        });
+
         this.dispose();
     }
 }

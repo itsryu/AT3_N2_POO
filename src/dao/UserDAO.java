@@ -29,7 +29,7 @@ public class UserDAO {
                 try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
                     if (generatedKeys.next()) {
                         long userId = generatedKeys.getLong(1);
-                        System.out.println("User created with ID: " + userId);
+                        user.setId((int) userId);
                     } else {
                         throw new SQLException("Creating user failed, no ID obtained.");
                     }

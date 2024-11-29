@@ -1,5 +1,6 @@
 package utils;
 
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -9,5 +10,9 @@ public class Util {
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
+    }
+
+    public static String generateToken() {
+        return UUID.randomUUID().toString();
     }
 }

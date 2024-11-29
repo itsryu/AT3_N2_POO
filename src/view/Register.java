@@ -127,21 +127,28 @@ public final class Register extends JFrame {
 
         if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Please fill all fields", "Error", JOptionPane.ERROR_MESSAGE);
-        } else if(userController.getUser(username) != null && userController.getUser(username).getUsername().equals(username)) {
+        } else if (userController.getUser(username) != null && userController.getUser(username).getUsername().equals(username)) {
             JOptionPane.showMessageDialog(this, "Username already exists", "Error", JOptionPane.ERROR_MESSAGE);
-        } else if(userController.getUser(email) != null && userController.getUser(email).getEmail().equals(email)) {
+        } else if (userController.getUser(email) != null && userController.getUser(email).getEmail().equals(email)) {
             JOptionPane.showMessageDialog(this, "Email has already been set", "Error", JOptionPane.ERROR_MESSAGE);
         } else if (password.length() < 8) {
             JOptionPane.showMessageDialog(this, "Password must have at least 8 characters", "Error", JOptionPane.ERROR_MESSAGE);
-        } else if(!Util.isValidEmail(email)) {
+        } else if (!Util.isValidEmail(email)) {
             JOptionPane.showMessageDialog(this, "Invalid email", "Error", JOptionPane.ERROR_MESSAGE);
-        }else {
+        } else {
             password = PasswordUtil.generateSaltedHash(password);
 
             if (PasswordUtil.verifyPassword(password, confirmPass)) {
                 if (userController.register(username, email, password)) {
                     JOptionPane.showMessageDialog(this, "User registered successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
-                    new Login().setVisible(true);
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            new Login().setVisible(true);
+                        }
+                    });
+
                     this.dispose();
                 } else {
                     JOptionPane.showMessageDialog(this, "Error registering user", "Error", JOptionPane.ERROR_MESSAGE);
@@ -153,7 +160,13 @@ public final class Register extends JFrame {
     }
 
     private void cancelButtonActionPerformed(ActionEvent e) {
-        new Login().setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new Login().setVisible(true);
+            }
+        });
+
         this.dispose();
     }
 }
