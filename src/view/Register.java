@@ -58,6 +58,21 @@ public final class Register extends JFrame {
                 cancelButtonActionPerformed(e);
             }
         });
+        
+        InputMap inputMap = registerPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+        ActionMap actionMap = registerPanel.getActionMap();
+
+        inputMap.put(KeyStroke.getKeyStroke("ENTER"), "press");
+        actionMap.put("press", new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (registerButton.hasFocus()) {
+                    registerButton.doClick();
+                } else if (cancelButton.hasFocus()) {
+                    cancelButton.doClick();
+                }
+            }
+        });
 
         GroupLayout panelLayout = new GroupLayout(registerPanel);
         registerPanel.setLayout(panelLayout);
