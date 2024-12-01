@@ -1,13 +1,17 @@
 package models;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 public class Profile {
     private Integer id;
     private Integer userId;
     private String username;
-    private String profilePicture;
+    private InputStream profilePicture;
     private String bio;
 
-    public Profile(int id, int userId, String username, String bio, String profilePicture) {
+    public Profile(int id, int userId, String username, String bio, InputStream profilePicture) {
         this.id = id;
         this.userId = userId;
         this.username = username;
@@ -47,11 +51,11 @@ public class Profile {
         return this.bio;
     }
 
-    public void setProfilePicture(String profilePicture) {
+    public void setProfilePicture(InputStream profilePicture) {
         this.profilePicture = profilePicture;
     }
 
-    public String getProfilePicture() {
+    public InputStream getProfilePicture() {
         return this.profilePicture;
     }
 }

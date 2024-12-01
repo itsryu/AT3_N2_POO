@@ -2,10 +2,9 @@ package dao;
 
 import models.Profile;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.*;
 
 public class ProfileDAO {
     private final Connection connection;
@@ -20,7 +19,7 @@ public class ProfileDAO {
         try (PreparedStatement stmt = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, profile.getUserId());
             stmt.setString(2, profile.getUsername());
-            stmt.setString(3, null);
+            stmt.setBinaryStream(3, null);
             stmt.setString(4, null);
 
             int affectedRows = stmt.executeUpdate();
@@ -37,7 +36,7 @@ public class ProfileDAO {
             }
 
             return true;
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             System.err.println("Error creating user profile: " + e.getMessage());
         }
 
@@ -54,29 +53,47 @@ public class ProfileDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return new Profile(rs.getInt("id_profile"), rs.getInt("id_user"), rs.getString("username"), rs.getString("bio"), rs.getString("profile_picture"));
+                    return new Profile(rs.getInt("id_profile"), rs.getInt("id_user"), rs.getString("username"), rs.getString("bio"), rs.getBinaryStream("profile_picture"));
                 }
             }
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             System.err.println("Error getting user profile: " + e.getMessage());
         }
 
         return null;
     }
 
-    public boolean editProfile(Profile profile) {
-        String query = "UPDATE profiles SET username = ?, profile_picture = ?, bio = ? WHERE id_user = ?";
+    public boolean editProfilePicture(int userId, InputStream profilePicture) {
+        String query = "UPDATE profiles SET profile_picture = ? WHERE id_user = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setString(1, profile.getUsername());
-            stmt.setString(2, profile.getProfilePicture());
-            stmt.setString(3, profile.getBio());
-            stmt.setInt(4, profile.getUserId());
+            stmt.setBinaryStream(1, profilePicture, profilePicture != null ? profilePicture.available() : 0);
+            stmt.setInt(2, userId);
 
             stmt.executeUpdate();
 
             return true;
-        } catch(SQLException e) {
+        } catch (SQLException e) {
+            System.err.println("Error editing user profile picture: " + e.getMessage());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        return false;
+    }
+
+    public boolean editProfile(Profile profile) {
+        String query = "UPDATE profiles SET username = ?, bio = ? WHERE id_user = ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, profile.getUsername());
+            stmt.setString(2, profile.getBio());
+            stmt.setInt(3, profile.getUserId());
+
+            stmt.executeUpdate();
+
+            return true;
+        } catch (SQLException e) {
             System.err.println("Error editing user profile: " + e.getMessage());
         }
 
@@ -92,7 +109,7 @@ public class ProfileDAO {
             stmt.executeUpdate();
 
             return true;
-        } catch(SQLException e) {
+        } catch (SQLException e) {
             System.err.println("Error deleting user profile: " + e.getMessage());
         }
 

@@ -10,7 +10,9 @@ import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import javax.imageio.ImageIO;
 
 public class ProfilePanel extends JPanel {
@@ -38,11 +40,11 @@ public class ProfilePanel extends JPanel {
 
         String accountCreatedAt = DateUtil.formatLocalDateTime(user.getCreatedAt(), "dd/MM/yyyy HH:mm:ss");
 
-        setProfilePicture(profile.getProfilePicture());
-
-        usernameLabel = new JLabel("Username: " + profile.getUsername());
+        usernameLabel = new JLabel(profile.getUsername());
         bioLabel = new JLabel(profile.getBio());
         JLabel creationDateLabel = new JLabel("Account Created: " + accountCreatedAt);
+
+        setProfilePicture(profile.getProfilePicture());
 
         layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.CENTER)
@@ -69,14 +71,14 @@ public class ProfilePanel extends JPanel {
         editButton.addActionListener(_ -> editProfile());
     }
 
-    private void setProfilePicture(String profilePicturePath) {
-        BufferedImage profileImage;
+    private void setProfilePicture(InputStream profilePicture) {
+        BufferedImage bufferedImage;
 
         try {
-            if (profilePicturePath == null || profilePicturePath.isEmpty()) {
-                profileImage = ImageIO.read(new File("src/assets/profile.png"));
+            if (profilePicture == null || profilePicture.available() == 0) {
+                bufferedImage = ImageIO.read(new File("src/assets/profile.png"));
             } else {
-                profileImage = ImageIO.read(new File(profilePicturePath));
+                bufferedImage = ImageIO.read(profilePicture);
             }
 
             int diameter = 100;
@@ -84,12 +86,13 @@ public class ProfilePanel extends JPanel {
             Graphics2D g2 = circleBuffer.createGraphics();
 
             g2.setClip(new Ellipse2D.Float(0, 0, diameter, diameter));
-            g2.drawImage(profileImage, 0, 0, diameter, diameter, null);
+            g2.drawImage(bufferedImage, 0, 0, diameter, diameter, null);
             g2.dispose();
 
             profilePictureLabel.setIcon(new ImageIcon(circleBuffer));
         } catch (IOException e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Failed to process the profile picture.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -138,29 +141,38 @@ public class ProfilePanel extends JPanel {
                         return true;
                     }
                     String name = f.getName().toLowerCase();
-                    return name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png") || name.endsWith(".gif") || name.endsWith(".bmp");
+                    return name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png");
                 }
 
                 @Override
                 public String getDescription() {
-                    return "Image Files (*.jpg, *.jpeg, *.png, *.gif, *.bmp)";
+                    return "Image Files (*.jpg, *.jpeg, *.png)";
                 }
             });
 
             int result = fileChooser.showOpenDialog(this);
+
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
-                setProfilePicture(selectedFile.getAbsolutePath());
 
-                profile.setProfilePicture(selectedFile.getAbsolutePath());
+                try {
+                    FileInputStream fileInputStream = new FileInputStream(selectedFile);
+                    ProfileController profileController = new ProfileController();
 
-                ProfileController profileController = new ProfileController();
-                boolean isUpdated = profileController.edit(profile);
+                    setProfilePicture(fileInputStream);
 
-                if (isUpdated) {
-                    JOptionPane.showMessageDialog(this, "Profile picture updated successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
-                } else {
-                    JOptionPane.showMessageDialog(this, "Failed to update profile picture", "Error", JOptionPane.ERROR_MESSAGE);
+                    boolean isUpdated = profileController.editProfilePicture(profile.getUserId(), fileInputStream);
+
+                    if (isUpdated) {
+                        JOptionPane.showMessageDialog(this, "Profile picture updated successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
+                    } else {
+                        JOptionPane.showMessageDialog(this, "Failed to update profile picture", "Error", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                    fileInputStream.close();
+                } catch (IOException error) {
+                    error.printStackTrace();
+                    JOptionPane.showMessageDialog(this, "Failed to read the file", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
         });

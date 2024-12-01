@@ -4,6 +4,8 @@ import dao.ProfileDAO;
 import models.Profile;
 import utils.DatabaseUtil;
 
+import java.io.InputStream;
+
 public class ProfileController {
     private final ProfileDAO profileDAO;
 
@@ -15,13 +17,16 @@ public class ProfileController {
         return profileDAO.getProfileByUserId(userId);
     }
 
-    public boolean create(int userId, String username, String bio, String profilePicture) {
+    public boolean create(int userId, String username, String bio, InputStream profilePicture) {
         Profile profile = new Profile(0, userId, username, bio, profilePicture);
-
         return profileDAO.createProfile(profile);
     }
 
     public boolean edit(Profile profile) {
         return profileDAO.editProfile(profile);
+    }
+
+    public boolean editProfilePicture(int userId, InputStream profilePicture) {
+        return profileDAO.editProfilePicture(userId, profilePicture);
     }
 }
