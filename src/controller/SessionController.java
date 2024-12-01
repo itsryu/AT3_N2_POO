@@ -2,7 +2,7 @@ package controller;
 
 import dao.SessionDAO;
 import models.Session;
-import utils.DBConnection;
+import utils.DatabaseUtil;
 
 import java.sql.Timestamp;
 
@@ -10,7 +10,7 @@ public class SessionController {
     private final SessionDAO sessionDAO;
 
     public SessionController() {
-        this.sessionDAO = new SessionDAO(DBConnection.getConnection());
+        this.sessionDAO = new SessionDAO(DatabaseUtil.getConnection());
     }
 
     public boolean login(Integer userId, String token, Timestamp entryTimestamp) {

@@ -1,18 +1,14 @@
 package view;
 
-import controller.SessionController;
+import controller.ProfileController;
 import controller.UserController;
-import models.User;
-import utils.PasswordUtil;
-import utils.Util;
-
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import javax.swing.*;
+import models.Profile;
+import models.User;
+import utils.PasswordUtil;
 
 public final class Login extends JFrame {
     private final JPanel loginPanel = new JPanel();
@@ -39,22 +35,17 @@ public final class Login extends JFrame {
         loginLabel.setFont(new Font("sansserif", Font.BOLD, 24));
         loginLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        loginButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    loginButtonActionPerformed(e);
-                } catch (NoSuchAlgorithmException ex) {
-                    throw new RuntimeException(ex);
-                }
+        loginButton.addActionListener(_-> {
+            try {
+                loginButtonActionPerformed();
+            } catch (NoSuchAlgorithmException error) {
+                JOptionPane.showMessageDialog(loginPanel, "An error occurred: " + error.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                System.err.println("An error occurred: "+ error.getLocalizedMessage());
             }
         });
 
-        registerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                registerButtonActionPerformed(e);
-            }
+        registerButton.addActionListener(_ -> {
+            registerButtonActionPerformed();
         });
 
         InputMap inputMap = loginPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
@@ -64,10 +55,10 @@ public final class Login extends JFrame {
         actionMap.put("press", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (loginButton.hasFocus()) {
-                    loginButton.doClick();
-                } else if (registerButton.hasFocus()) {
-                    registerButton.doClick();
+                Component focusedComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+
+                if (focusedComponent instanceof JButton jButton) {
+                    jButton.doClick();
                 }
             }
         });
@@ -78,7 +69,7 @@ public final class Login extends JFrame {
         panelLayout.setHorizontalGroup(
                 panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(panelLayout.createSequentialGroup()
-                                .addGap(150, 150, 150)
+                                .addGap(0, 100, Short.MAX_VALUE)
                                 .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                                         .addComponent(usernameLabel)
                                         .addComponent(usernameField)
@@ -89,13 +80,14 @@ public final class Login extends JFrame {
                                                 .addComponent(loginButton, GroupLayout.PREFERRED_SIZE, 140, GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                                 .addComponent(registerButton, GroupLayout.PREFERRED_SIZE, 140, GroupLayout.PREFERRED_SIZE)))
-                                .addContainerGap(150, Short.MAX_VALUE))
+                                .addContainerGap(100, Short.MAX_VALUE)
+                        )
         );
 
         panelLayout.setVerticalGroup(
                 panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(panelLayout.createSequentialGroup()
-                                .addGap(50, 50, 50)
+                                .addGap(0, 100, Short.MAX_VALUE)
                                 .addComponent(loginLabel)
                                 .addGap(30, 30, 30)
                                 .addComponent(usernameLabel)
@@ -109,7 +101,8 @@ public final class Login extends JFrame {
                                 .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                         .addComponent(loginButton)
                                         .addComponent(registerButton))
-                                .addContainerGap(100, Short.MAX_VALUE))
+                                .addContainerGap(100, Short.MAX_VALUE)
+                        )
         );
 
         getContentPane().add(loginPanel);
@@ -117,7 +110,7 @@ public final class Login extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    private void loginButtonActionPerformed(ActionEvent e) throws NoSuchAlgorithmException {
+    private void loginButtonActionPerformed() throws NoSuchAlgorithmException {
         String username = usernameField.getText();
         String password = String.valueOf(passwordField.getPassword());
         UserController userController = new UserController();
@@ -128,34 +121,30 @@ public final class Login extends JFrame {
         } else if (!PasswordUtil.verifyPassword(user.getPassword(), password)) {
             JOptionPane.showMessageDialog(this, "Invalid username or password", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
-            String token = Util.generateToken();
-            Timestamp entryTimestamp = Timestamp.valueOf(LocalDateTime.now());
+            final ProfileController profileController = new ProfileController();
+            Profile profile = profileController.getProfile(user.getId());
 
-            SessionController sessionController = new SessionController();
+            if (profile == null) {
+                if (profileController.create(user.getId(), user.getUsername(), null, null)) {
+                    profile = profileController.getProfile(user.getId());
+                } else {
+                    JOptionPane.showMessageDialog(this, "Login failed: Internal error", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            }
 
-            if(sessionController.login(user.getId(), token, entryTimestamp)) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        new Home(user).setVisible(true);
-                    }
-                });
+            final Profile finalProfile = profile;
+
+            if (userController.login(user)) {
+                SwingUtilities.invokeLater(() -> new Home(user, finalProfile).setVisible(true));
+                this.dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Login failed: Internal error", "Error", JOptionPane.ERROR_MESSAGE);
             }
-
-            this.dispose();
         }
     }
 
-    private void registerButtonActionPerformed(ActionEvent e) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new Register().setVisible(true);
-            }
-        });
-
+    private void registerButtonActionPerformed() {
+        SwingUtilities.invokeLater(() -> new Register().setVisible(true));
         this.dispose();
     }
 }

@@ -15,7 +15,7 @@ public class SessionDAO {
     }
 
     public boolean createSession(Session session) {
-        String query = "INSERT INTO sessoes (id_usuario, token, hora_entrada) VALUES (?, ?, ?)";
+        String query = "INSERT INTO sessions (id_user, token, entry_timestamp) VALUES (?, ?, ?)";
 
         try(PreparedStatement stmt = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, session.getUserId());
@@ -43,7 +43,7 @@ public class SessionDAO {
     }
 
     public Session getSessionByUserId(int userId) {
-        String query = "SELECT * FROM sessoes WHERE id_usuario = ?";
+        String query = "SELECT * FROM sessions WHERE id_user = ?";
 
         try(PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, userId);
@@ -52,7 +52,7 @@ public class SessionDAO {
 
             try(ResultSet rs = stmt.executeQuery()) {
                 if(rs.next()) {
-                    return new Session(rs.getInt("id_sessao"), rs.getInt("id_usuario"), rs.getString("token"), rs.getTimestamp("hora_entrada"), rs.getTimestamp("hora_saida"));
+                    return new Session(rs.getInt("id_session"), rs.getInt("id_user"), rs.getString("token"), rs.getTimestamp("entry_timestamp"), rs.getTimestamp("exit_timestamp"));
                 }
             }
         } catch(SQLException error) {
@@ -63,7 +63,7 @@ public class SessionDAO {
     }
 
     public boolean updateSession(Session session) {
-        String query = "UPDATE sessoes SET token = ?, hora_entrada = ?, hora_saida = ? WHERE id_sessao = ?";
+        String query = "UPDATE sessions SET token = ?, entry_timestamp = ?, exit_timestamp = ? WHERE id_session = ?";
 
         try(PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, session.getToken());
@@ -76,6 +76,22 @@ public class SessionDAO {
             return true;
         } catch(SQLException error) {
             System.err.println("Error updating user session: " + error.getMessage());
+        }
+
+        return false;
+    }
+
+    public boolean deleteSession(Session session) {
+        String query = "DELETE FROM sessions WHERE id_session = ?";
+
+        try(PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setInt(1, session.getId());
+
+            stmt.executeUpdate();
+
+            return true;
+        } catch(SQLException error) {
+            System.err.println("Error deleting user session: " + error.getMessage());
         }
 
         return false;

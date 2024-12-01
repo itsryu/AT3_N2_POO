@@ -1,24 +1,18 @@
-import utils.DBConnection;
+import utils.DatabaseUtil;
 import view.Login;
 
 import javax.swing.*;
 import java.sql.Connection;
 
 public class Main {
-    private static final Connection database = DBConnection.getConnection();
+    private static final Connection database = DatabaseUtil.getConnection();
 
     public static void main(String[] args) {
         if (database != null) {
-            System.out.println("Connected to the database");
+            SwingUtilities.invokeLater(() -> new Login().setVisible(true));
         } else {
-            System.out.println("Failed to connect to the database");
+            System.err.println("Failed to connect to the database");
+            JOptionPane.showMessageDialog(null, "Failed to connect to the database", "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new Login().setVisible(true);
-            }
-        });
     }
 }

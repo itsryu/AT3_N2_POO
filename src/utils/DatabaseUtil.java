@@ -4,9 +4,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class DBConnection {
+public class DatabaseUtil {
     public static Connection getConnection() {
-        String url = "jdbc:mysql://localhost:3306/rede_antissocial";
+        String url = "jdbc:mysql://localhost:3306/poo";
         String user = "root";
         String password = "Jv8272480213#123098ScJv#";
 
@@ -14,8 +14,9 @@ public class DBConnection {
             Class.forName("com.mysql.cj.jdbc.Driver");
             return DriverManager.getConnection(url, user, password);
         } catch (SQLException error) {
-            DBConnection.handleError(error);
+            DatabaseUtil.handleError(error);
         } catch (ClassNotFoundException e) {
+            System.err.println("Verify if the JDBC Driver was setup (MySQL Connector)");
             System.err.println("JDBC Driver not found: " + e.getMessage());
         }
 

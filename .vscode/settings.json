@@ -1,0 +1,8 @@
+{
+    "java.debug.settings.onBuildFailureProceed": true,
+    "java.project.outputPath": "out",
+    "java.project.sourcePath": "src",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar"
+    ],   
+}

@@ -7,22 +7,24 @@ CREATE TABLE users (
     username VARCHAR(50) NOT NULL UNIQUE,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
+    birthdate DATE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) DEFAULT CHARSET = 'utf8' DEFAULT COLLATE = 'utf8_general_ci';
 
-CREATE TABLE profile (
+CREATE TABLE profiles (
     id_profile INT AUTO_INCREMENT PRIMARY KEY,
     id_user INT NOT NULL,
+    username VARCHAR(50),
     bio VARCHAR(255),
-    profile_picture VARCHAR(255),
+    profile_picture MEDIUMBLOB NULL,
     FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
-);
+) DEFAULT CHARSET = 'utf8' DEFAULT COLLATE = 'utf8_general_ci';
 
 CREATE TABLE sessions (
     id_session INT AUTO_INCREMENT PRIMARY KEY,
     id_user INT NOT NULL,
     token VARCHAR(255) NOT NULL UNIQUE,
-    entry_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-    exit_timestamp DATETIME,
+    entry_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    exit_timestamp TIMESTAMP NULL,
     FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
-);
+) DEFAULT CHARSET = 'utf8' DEFAULT COLLATE = 'utf8_general_ci';

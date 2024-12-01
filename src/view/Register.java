@@ -1,14 +1,17 @@
 package view;
 
 import controller.UserController;
-import utils.PasswordUtil;
-import utils.Util;
 
-import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDate;
+import java.time.Period;
+import javax.swing.*;
+
+import panels.DatePickerPanel;
+import utils.PasswordUtil;
+import utils.Util;
 
 public final class Register extends JFrame {
     private final JPanel registerPanel = new JPanel();
@@ -19,6 +22,9 @@ public final class Register extends JFrame {
 
     private final JLabel emailLabel = new JLabel("Email:");
     private final JTextField emailField = new JTextField(20);
+
+    private final JLabel birthDateLabel = new JLabel("Birth Date:");
+    private final DatePickerPanel birthDatePanel = new DatePickerPanel();
 
     private final JLabel passwordLabel = new JLabel("Password:");
     private final JPasswordField passwordField = new JPasswordField(20);
@@ -41,24 +47,19 @@ public final class Register extends JFrame {
         registerLabel.setFont(new Font("sansserif", Font.BOLD, 24));
         registerLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        registerButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    registerButtonActionPerformed(e);
-                } catch (NoSuchAlgorithmException ex) {
-                    throw new RuntimeException(ex);
-                }
+        registerButton.addActionListener(_ -> {
+            try {
+                registerButtonActionPerformed();
+            } catch (NoSuchAlgorithmException error) {
+                JOptionPane.showMessageDialog(registerPanel, "An error occurred: " + error.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                System.err.println("An error occurred: " + error.getLocalizedMessage());
             }
         });
 
-        cancelButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                cancelButtonActionPerformed(e);
-            }
+        cancelButton.addActionListener(_ -> {
+            cancelButtonActionPerformed();
         });
-        
+
         InputMap inputMap = registerPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         ActionMap actionMap = registerPanel.getActionMap();
 
@@ -66,10 +67,10 @@ public final class Register extends JFrame {
         actionMap.put("press", new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (registerButton.hasFocus()) {
-                    registerButton.doClick();
-                } else if (cancelButton.hasFocus()) {
-                    cancelButton.doClick();
+                Component focusedComponent = KeyboardFocusManager.getCurrentKeyboardFocusManager().getFocusOwner();
+
+                if (focusedComponent instanceof JButton jButton) {
+                    jButton.doClick();
                 }
             }
         });
@@ -80,12 +81,14 @@ public final class Register extends JFrame {
         panelLayout.setHorizontalGroup(
                 panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(panelLayout.createSequentialGroup()
-                                .addGap(150, 150, 150)
+                                .addGap(150, 150, Short.MAX_VALUE)
                                 .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                                         .addComponent(usernameLabel)
                                         .addComponent(usernameField)
                                         .addComponent(emailLabel)
                                         .addComponent(emailField)
+                                        .addComponent(birthDateLabel)
+                                        .addComponent(birthDatePanel)
                                         .addComponent(passwordLabel)
                                         .addComponent(passwordField)
                                         .addComponent(confirmPasswordLabel)
@@ -101,7 +104,7 @@ public final class Register extends JFrame {
         panelLayout.setVerticalGroup(
                 panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(panelLayout.createSequentialGroup()
-                                .addGap(50, 50, 50)
+                                .addGap(100, 100, Short.MAX_VALUE)
                                 .addComponent(registerLabel)
                                 .addGap(30, 30, 30)
                                 .addComponent(usernameLabel)
@@ -111,6 +114,10 @@ public final class Register extends JFrame {
                                 .addComponent(emailLabel)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(emailField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
+                                .addComponent(birthDateLabel)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(birthDatePanel)
                                 .addGap(18, 18, 18)
                                 .addComponent(passwordLabel)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -132,12 +139,13 @@ public final class Register extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    private void registerButtonActionPerformed(ActionEvent e) throws NoSuchAlgorithmException {
+    private void registerButtonActionPerformed() throws NoSuchAlgorithmException {
         String username = usernameField.getText();
         String email = emailField.getText();
         String password = String.valueOf(passwordField.getPassword());
         String confirmPass = String.valueOf(confirmPasswordField.getPassword());
-
+        LocalDate birthDate = birthDatePanel.getDate();
+        Period age = Period.between(birthDate, LocalDate.now());
         UserController userController = new UserController();
 
         if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
@@ -148,21 +156,18 @@ public final class Register extends JFrame {
             JOptionPane.showMessageDialog(this, "Email has already been set", "Error", JOptionPane.ERROR_MESSAGE);
         } else if (password.length() < 8) {
             JOptionPane.showMessageDialog(this, "Password must have at least 8 characters", "Error", JOptionPane.ERROR_MESSAGE);
-        } else if (!Util.isValidEmail(email)) {
+        } else if (Util.isValidEmail(email)) {
             JOptionPane.showMessageDialog(this, "Invalid email", "Error", JOptionPane.ERROR_MESSAGE);
+        } else if (age.getYears() < 18) {
+            JOptionPane.showMessageDialog(this, "You must be at least 18 years old", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
             password = PasswordUtil.generateSaltedHash(password);
 
             if (PasswordUtil.verifyPassword(password, confirmPass)) {
-                if (userController.register(username, email, password)) {
+                if (userController.register(username, email, password, birthDate)) {
                     JOptionPane.showMessageDialog(this, "User registered successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
 
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            new Login().setVisible(true);
-                        }
-                    });
+                    SwingUtilities.invokeLater(() -> new Login().setVisible(true));
 
                     this.dispose();
                 } else {
@@ -174,14 +179,8 @@ public final class Register extends JFrame {
         }
     }
 
-    private void cancelButtonActionPerformed(ActionEvent e) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new Login().setVisible(true);
-            }
-        });
-
+    private void cancelButtonActionPerformed() {
+        SwingUtilities.invokeLater(() -> new Login().setVisible(true));
         this.dispose();
     }
 }
