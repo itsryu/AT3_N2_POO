@@ -1,0 +1,28 @@
+CREATE DATABASE IF NOT EXISTS AT3-N2-POO;
+
+USE AT3-N2-POO;
+  
+CREATE TABLE users (
+    id_user INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE profile (
+    id_profile INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    bio VARCHAR(255),
+    profile_picture VARCHAR(255),
+    FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
+);
+
+CREATE TABLE sessions (
+    id_session INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    entry_timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    exit_timestamp DATETIME,
+    FOREIGN KEY (id_user) REFERENCES users(id_user) ON DELETE CASCADE
+);
