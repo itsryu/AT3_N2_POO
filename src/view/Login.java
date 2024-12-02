@@ -121,26 +121,30 @@ public final class Login extends JFrame {
         } else if (!PasswordUtil.verifyPassword(user.getPassword(), password)) {
             JOptionPane.showMessageDialog(this, "Invalid username or password", "Error", JOptionPane.ERROR_MESSAGE);
         } else {
-            final ProfileController profileController = new ProfileController();
-            Profile profile = profileController.getProfile(user.getId());
+            Profile profile = getOrCreateProfile(user);
 
             if (profile == null) {
-                if (profileController.create(user.getId(), user.getUsername(), null, null)) {
-                    profile = profileController.getProfile(user.getId());
+                JOptionPane.showMessageDialog(this, "Login failed: Internal error", "Error", JOptionPane.ERROR_MESSAGE);
+            } else {
+                if (userController.login(user)) {
+                    SwingUtilities.invokeLater(() -> new Home(user, profile).setVisible(true));
+                    this.dispose();
                 } else {
                     JOptionPane.showMessageDialog(this, "Login failed: Internal error", "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
-
-            final Profile finalProfile = profile;
-
-            if (userController.login(user)) {
-                SwingUtilities.invokeLater(() -> new Home(user, finalProfile).setVisible(true));
-                this.dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Login failed: Internal error", "Error", JOptionPane.ERROR_MESSAGE);
-            }
         }
+    }
+
+    private Profile getOrCreateProfile(User user) {
+        ProfileController profileController = new ProfileController();
+        Profile profile = profileController.getProfile(user.getId());
+
+        if (profile == null && profileController.create(user.getId(), user.getUsername(), null, null)) {
+            profile = profileController.getProfile(user.getId());
+        }
+
+        return profile;
     }
 
     private void registerButtonActionPerformed() {

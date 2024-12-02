@@ -1,6 +1,5 @@
 package panels;
 
-import controller.ProfileController;
 import models.Profile;
 import models.User;
 import utils.DateUtil;
@@ -9,10 +8,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Ellipse2D;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import javax.imageio.ImageIO;
 
 public class ProfilePanel extends JPanel {
@@ -38,13 +34,16 @@ public class ProfilePanel extends JPanel {
         layout.setAutoCreateGaps(true);
         layout.setAutoCreateContainerGaps(true);
 
-        String accountCreatedAt = DateUtil.formatLocalDateTime(user.getCreatedAt(), "dd/MM/yyyy HH:mm:ss");
+        // profile picture
+        setProfilePicture(profile.getProfilePicture());
 
+        // username and bio
         usernameLabel = new JLabel(profile.getUsername());
         bioLabel = new JLabel(profile.getBio());
-        JLabel creationDateLabel = new JLabel("Account Created: " + accountCreatedAt);
 
-        setProfilePicture(profile.getProfilePicture());
+        // account creation date
+        String accountCreatedAt = DateUtil.formatLocalDateTime(user.getCreatedAt(), "dd/MM/yyyy HH:mm:ss");
+        JLabel creationDateLabel = new JLabel("Account Created: " + accountCreatedAt);
 
         layout.setHorizontalGroup(
                 layout.createParallelGroup(GroupLayout.Alignment.CENTER)
@@ -97,14 +96,16 @@ public class ProfilePanel extends JPanel {
     }
 
     private void editProfile() {
+        JLabel usernameLabel = new JLabel("Username:" );
         JTextField usernameField = new JTextField(profile.getUsername());
+        JLabel bioLabel = new JLabel("Bio:");
         JTextField bioField = new JTextField(profile.getBio());
         JButton changePictureButton = getJButton();
 
         JPanel panel = new JPanel(new GridLayout(0, 1));
-        panel.add(new JLabel("Username:"));
+        panel.add(usernameLabel);
         panel.add(usernameField);
-        panel.add(new JLabel("Bio:"));
+        panel.add(bioLabel);
         panel.add(bioField);
         panel.add(changePictureButton);
 
@@ -114,12 +115,12 @@ public class ProfilePanel extends JPanel {
             profile.setUsername(usernameField.getText());
             profile.setBio(bioField.getText());
 
-            ProfileController profileController = new ProfileController();
-            boolean isUpdated = profileController.edit(profile);
+            if (profile.editProfile(profile)) {
+                usernameLabel.setText(profile.getUsername());
+                bioLabel.setText(profile.getBio());
 
-            if (isUpdated) {
-                usernameLabel.setText("Username: " + profile.getUsername());
-                bioLabel.setText("Bio: " + profile.getBio());
+                this.bioLabel.setText(profile.getBio());
+                this.usernameLabel.setText(profile.getUsername());
 
                 JOptionPane.showMessageDialog(this, "Profile updated successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
             } else {
@@ -132,44 +133,24 @@ public class ProfilePanel extends JPanel {
         JButton changePictureButton = new JButton("Change Picture");
 
         changePictureButton.addActionListener(e -> {
-            JFileChooser fileChooser = new JFileChooser();
-
-            fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
-                @Override
-                public boolean accept(File f) {
-                    if (f.isDirectory()) {
-                        return true;
-                    }
-                    String name = f.getName().toLowerCase();
-                    return name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png");
-                }
-
-                @Override
-                public String getDescription() {
-                    return "Image Files (*.jpg, *.jpeg, *.png)";
-                }
-            });
+            JFileChooser fileChooser = getJFileChooser();
 
             int result = fileChooser.showOpenDialog(this);
 
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = fileChooser.getSelectedFile();
 
-                try {
-                    FileInputStream fileInputStream = new FileInputStream(selectedFile);
-                    ProfileController profileController = new ProfileController();
+                try (FileInputStream fileInputStream = new FileInputStream(selectedFile)) {
+                    byte[] imageData = fileInputStream.readAllBytes();
+                    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(imageData);
+                    setProfilePicture(byteArrayInputStream);
 
-                    setProfilePicture(fileInputStream);
-
-                    boolean isUpdated = profileController.editProfilePicture(profile.getUserId(), fileInputStream);
-
-                    if (isUpdated) {
+                    if (profile.editProfilePicture(profile, new ByteArrayInputStream(imageData))) {
+                        profile.setProfilePicture(new ByteArrayInputStream(imageData));
                         JOptionPane.showMessageDialog(this, "Profile picture updated successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
                     } else {
                         JOptionPane.showMessageDialog(this, "Failed to update profile picture", "Error", JOptionPane.ERROR_MESSAGE);
                     }
-
-                    fileInputStream.close();
                 } catch (IOException error) {
                     error.printStackTrace();
                     JOptionPane.showMessageDialog(this, "Failed to read the file", "Error", JOptionPane.ERROR_MESSAGE);
@@ -177,5 +158,26 @@ public class ProfilePanel extends JPanel {
             }
         });
         return changePictureButton;
+    }
+
+    private static JFileChooser getJFileChooser() {
+        JFileChooser fileChooser = new JFileChooser();
+
+        fileChooser.setFileFilter(new javax.swing.filechooser.FileFilter() {
+            @Override
+            public boolean accept(File file) {
+                if (file.isDirectory()) return true;
+
+                String name = file.getName().toLowerCase();
+
+                return name.endsWith(".jpg") || name.endsWith(".jpeg") || name.endsWith(".png");
+            }
+
+            @Override
+            public String getDescription() {
+                return "Image Files (*.jpg, *.jpeg, *.png)";
+            }
+        });
+        return fileChooser;
     }
 }

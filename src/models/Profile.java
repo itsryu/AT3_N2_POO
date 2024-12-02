@@ -1,10 +1,8 @@
 package models;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
-public class Profile {
+public abstract class Profile {
     private Integer id;
     private Integer userId;
     private String username;
@@ -58,4 +56,8 @@ public class Profile {
     public InputStream getProfilePicture() {
         return this.profilePicture;
     }
+
+    public abstract boolean createProfile(int userId, String username, String bio, InputStream profilePicture);
+    public abstract boolean editProfile(Profile profile);
+    public abstract boolean editProfilePicture(Profile profile, InputStream profilePicture);
 }

@@ -1,4 +1,4 @@
-package panels;
+package fields;
 
 import utils.DateUtil;
 
@@ -7,16 +7,16 @@ import java.time.LocalDate;
 import java.util.Date;
 import javax.swing.*;
 
-public final class DatePickerPanel extends JPanel {
+public final class DateField extends JPanel {
     private final JComboBox<String> dayComboBox = new JComboBox<>();
     private final JComboBox<String> monthComboBox = new JComboBox<>();
     private final JComboBox<String> yearComboBox = new JComboBox<>();
 
-    public DatePickerPanel() {
+    public DateField() {
         this.initComponents();
     }
 
-    public DatePickerPanel(LocalDate selectedDate) {
+    public DateField(LocalDate selectedDate) {
         this.initComponents();
 
         this.setSelectedDate(DateUtil.formatLocalDate(selectedDate, "yyyy-MM-dd"));

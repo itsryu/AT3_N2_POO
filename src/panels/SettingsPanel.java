@@ -9,6 +9,7 @@ import java.time.Period;
 import java.util.Objects;
 import javax.swing.*;
 
+import fields.DateField;
 import models.User;
 import utils.DateUtil;
 import utils.PasswordUtil;
@@ -120,7 +121,7 @@ public final class SettingsPanel extends JPanel {
         JTextField usernameField = new JTextField(user.getUsername());
         JTextField emailField = new JTextField(user.getEmail());
         String birthDate = DateUtil.formatLocalDate(user.getBirthDate(), "dd-MM-yyyy");
-        DatePickerPanel birthDatePanel = new DatePickerPanel(DateUtil.parseLocalDate(birthDate, "dd-MM-yyyy"));
+        DateField dateField = new DateField(DateUtil.parseLocalDate(birthDate, "dd-MM-yyyy"));
 
         JPanel panel = new JPanel(new GridLayout(0, 1));
         panel.add(new JLabel("Account Username:"));
@@ -128,7 +129,7 @@ public final class SettingsPanel extends JPanel {
         panel.add(new JLabel("Email:"));
         panel.add(emailField);
         panel.add(new JLabel("Birth Date:"));
-        panel.add(birthDatePanel);
+        panel.add(dateField);
 
         int option = JOptionPane.showConfirmDialog(this, panel, "Edit Account Information", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
@@ -136,7 +137,7 @@ public final class SettingsPanel extends JPanel {
             try {
                 String newUsername = usernameField.getText();
                 String newEmail = emailField.getText();
-                LocalDate formatedDate = birthDatePanel.getDate();
+                LocalDate formatedDate = dateField.getDate();
                 Period age = Period.between(formatedDate, LocalDate.now());
                 UserController userController = new UserController();
 
@@ -157,7 +158,7 @@ public final class SettingsPanel extends JPanel {
                     user.setEmail(newEmail);
                     user.setBirthDate(formatedDate);
 
-                    if (user.edit(user)) {
+                    if (user.editUser(user)) {
                         JOptionPane.showMessageDialog(this, "Account information updated successfully", "Success", JOptionPane.INFORMATION_MESSAGE);
                     } else {
                         JOptionPane.showMessageDialog(this, "An error occurred while updating your account information", "Error", JOptionPane.ERROR_MESSAGE);
@@ -193,7 +194,7 @@ public final class SettingsPanel extends JPanel {
                 newPassword = PasswordUtil.generateSaltedHash(newPassword);
                 user.setPassword(newPassword);
 
-                if (user.edit(user)) {
+                if (user.editUser(user)) {
                     JOptionPane.showMessageDialog(this, "Password changed successfully, please login again", "Success", JOptionPane.INFORMATION_MESSAGE);
 
                     SwingUtilities.invokeLater(() -> new Login().setVisible(true));

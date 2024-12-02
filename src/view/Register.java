@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import java.time.Period;
 import javax.swing.*;
 
-import panels.DatePickerPanel;
+import fields.DateField;
 import utils.PasswordUtil;
 import utils.Util;
 
@@ -24,7 +24,7 @@ public final class Register extends JFrame {
     private final JTextField emailField = new JTextField(20);
 
     private final JLabel birthDateLabel = new JLabel("Birth Date:");
-    private final DatePickerPanel birthDatePanel = new DatePickerPanel();
+    private final DateField dateField = new DateField();
 
     private final JLabel passwordLabel = new JLabel("Password:");
     private final JPasswordField passwordField = new JPasswordField(20);
@@ -88,7 +88,7 @@ public final class Register extends JFrame {
                                         .addComponent(emailLabel)
                                         .addComponent(emailField)
                                         .addComponent(birthDateLabel)
-                                        .addComponent(birthDatePanel)
+                                        .addComponent(dateField)
                                         .addComponent(passwordLabel)
                                         .addComponent(passwordField)
                                         .addComponent(confirmPasswordLabel)
@@ -117,7 +117,7 @@ public final class Register extends JFrame {
                                 .addGap(18, 18, 18)
                                 .addComponent(birthDateLabel)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(birthDatePanel)
+                                .addComponent(dateField)
                                 .addGap(18, 18, 18)
                                 .addComponent(passwordLabel)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -144,7 +144,7 @@ public final class Register extends JFrame {
         String email = emailField.getText();
         String password = String.valueOf(passwordField.getPassword());
         String confirmPass = String.valueOf(confirmPasswordField.getPassword());
-        LocalDate birthDate = birthDatePanel.getDate();
+        LocalDate birthDate = dateField.getDate();
         Period age = Period.between(birthDate, LocalDate.now());
         UserController userController = new UserController();
 

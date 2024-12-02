@@ -21,16 +21,16 @@ public class RegularUser extends User {
         return userController.logout(user);
     }
 
-    public boolean delete(User user) {
+    public boolean deleteUser(User user) {
         return userController.delete(user);
     }
 
-    public boolean edit(User user) {
+    public boolean editUser(User user) {
         return userController.edit(user);
     }
 
     @Override
-    public boolean register(String username, String email, String password, LocalDate birthDate) {
+    public boolean registerUser(String username, String email, String password, LocalDate birthDate) {
         return userController.register(username, email, password, birthDate);
     }
 }

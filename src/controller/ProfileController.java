@@ -2,6 +2,7 @@ package controller;
 
 import dao.ProfileDAO;
 import models.Profile;
+import models.UserProfile;
 import utils.DatabaseUtil;
 
 import java.io.InputStream;
@@ -18,7 +19,7 @@ public class ProfileController {
     }
 
     public boolean create(int userId, String username, String bio, InputStream profilePicture) {
-        Profile profile = new Profile(0, userId, username, bio, profilePicture);
+        Profile profile = new UserProfile(0, userId, username, bio, profilePicture);
         return profileDAO.createProfile(profile);
     }
 
@@ -26,7 +27,7 @@ public class ProfileController {
         return profileDAO.editProfile(profile);
     }
 
-    public boolean editProfilePicture(int userId, InputStream profilePicture) {
-        return profileDAO.editProfilePicture(userId, profilePicture);
+    public boolean editProfilePicture(Profile profile, InputStream profilePicture) {
+        return profileDAO.editProfilePicture(profile, profilePicture);
     }
 }

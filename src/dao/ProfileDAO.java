@@ -1,6 +1,7 @@
 package dao;
 
 import models.Profile;
+import models.UserProfile;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -53,7 +54,7 @@ public class ProfileDAO {
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    return new Profile(rs.getInt("id_profile"), rs.getInt("id_user"), rs.getString("username"), rs.getString("bio"), rs.getBinaryStream("profile_picture"));
+                    return new UserProfile(rs.getInt("id_profile"), rs.getInt("id_user"), rs.getString("username"), rs.getString("bio"), rs.getBinaryStream("profile_picture"));
                 }
             }
         } catch (SQLException e) {
@@ -63,20 +64,23 @@ public class ProfileDAO {
         return null;
     }
 
-    public boolean editProfilePicture(int userId, InputStream profilePicture) {
+    public boolean editProfilePicture(Profile profile, InputStream profilePicture) {
         String query = "UPDATE profiles SET profile_picture = ? WHERE id_user = ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setBinaryStream(1, profilePicture, profilePicture != null ? profilePicture.available() : 0);
-            stmt.setInt(2, userId);
+            if (profilePicture.available() > 0) {
+                stmt.setBinaryStream(1, profilePicture, profilePicture.available());
+                stmt.setInt(2, profile.getUserId());
 
-            stmt.executeUpdate();
+                int affectedRows = stmt.executeUpdate();
 
-            return true;
-        } catch (SQLException e) {
+                return affectedRows > 0;
+            } else {
+                System.err.println("Profile picture InputStream is empty.");
+                return false;
+            }
+        } catch (SQLException | IOException e) {
             System.err.println("Error editing user profile picture: " + e.getMessage());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
 
         return false;

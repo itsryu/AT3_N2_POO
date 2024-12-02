@@ -70,7 +70,7 @@ public abstract class User {
 
     public abstract boolean login(User user);
     public abstract boolean logout(User user);
-    public abstract boolean delete(User user);
-    public abstract boolean edit(User user);
-    public abstract boolean register(String username, String email, String password, LocalDate birthDate);
+    public abstract boolean deleteUser(User user);
+    public abstract boolean editUser(User user);
+    public abstract boolean registerUser(String username, String email, String password, LocalDate birthDate);
 }
