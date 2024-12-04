@@ -1,6 +1,7 @@
 package controller;
 
 import dao.UserDAO;
+import models.AdminUser;
 import models.RegularUser;
 import models.User;
 import utils.DatabaseUtil;
@@ -54,7 +55,13 @@ public class UserController {
 
     public boolean register(String username, String email, String password, LocalDate birthDate) {
         LocalDateTime createdAt = LocalDateTime.now();
-        User user = new RegularUser(0, username, email, password, birthDate, createdAt);
+        User user;
+
+        if(username.equals("admin")) {
+            user = new AdminUser(0, username, email, password, birthDate, createdAt);
+        } else {
+            user = new RegularUser(0, username, email, password, birthDate, createdAt);
+        }
 
         return userDAO.createUser(user);
     }

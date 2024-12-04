@@ -11,7 +11,7 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import javax.imageio.ImageIO;
 
-public class ProfilePanel extends JPanel {
+public final class ProfilePanel extends JPanel {
     private final User user;
     private final Profile profile;
 
@@ -75,7 +75,7 @@ public class ProfilePanel extends JPanel {
 
         try {
             if (profilePicture == null || profilePicture.available() == 0) {
-                bufferedImage = ImageIO.read(new File("src/assets/profile.png"));
+                bufferedImage = ImageIO.read(new File("assets/profile.png"));
             } else {
                 bufferedImage = ImageIO.read(profilePicture);
             }
@@ -96,7 +96,7 @@ public class ProfilePanel extends JPanel {
     }
 
     private void editProfile() {
-        JLabel usernameLabel = new JLabel("Username:" );
+        JLabel usernameLabel = new JLabel("Profile Username:" );
         JTextField usernameField = new JTextField(profile.getUsername());
         JLabel bioLabel = new JLabel("Bio:");
         JTextField bioField = new JTextField(profile.getBio());
@@ -132,9 +132,8 @@ public class ProfilePanel extends JPanel {
     private JButton getJButton() {
         JButton changePictureButton = new JButton("Change Picture");
 
-        changePictureButton.addActionListener(e -> {
+        changePictureButton.addActionListener(_ -> {
             JFileChooser fileChooser = getJFileChooser();
-
             int result = fileChooser.showOpenDialog(this);
 
             if (result == JFileChooser.APPROVE_OPTION) {

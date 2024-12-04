@@ -69,7 +69,7 @@ public final class Login extends JFrame {
         panelLayout.setHorizontalGroup(
                 panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(panelLayout.createSequentialGroup()
-                                .addGap(0, 100, Short.MAX_VALUE)
+                                .addContainerGap(100, Short.MAX_VALUE)
                                 .addGroup(panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING, false)
                                         .addComponent(usernameLabel)
                                         .addComponent(usernameField)
@@ -87,7 +87,7 @@ public final class Login extends JFrame {
         panelLayout.setVerticalGroup(
                 panelLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(panelLayout.createSequentialGroup()
-                                .addGap(0, 100, Short.MAX_VALUE)
+                                .addContainerGap(100, Short.MAX_VALUE)
                                 .addComponent(loginLabel)
                                 .addGap(30, 30, 30)
                                 .addComponent(usernameLabel)
@@ -126,7 +126,7 @@ public final class Login extends JFrame {
             if (profile == null) {
                 JOptionPane.showMessageDialog(this, "Login failed: Internal error", "Error", JOptionPane.ERROR_MESSAGE);
             } else {
-                if (userController.login(user)) {
+                if (user.login(user)) {
                     SwingUtilities.invokeLater(() -> new Home(user, profile).setVisible(true));
                     this.dispose();
                 } else {

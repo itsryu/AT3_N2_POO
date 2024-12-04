@@ -18,15 +18,20 @@ public class SessionController {
 
         if(session == null) {
             session = new Session(0, userId, token, entryTimestamp);
+
             return sessionDAO.createSession(session);
         } else {
             session.setEntryTimestamp(entryTimestamp);
+            session.setExitTimestamp(null);
+
             return sessionDAO.updateSession(session);
         }
     }
 
     public boolean logout(Integer userId, Timestamp exitTimestamp) {
         Session session = sessionDAO.getSessionByUserId(userId);
+
+        session.setEntryTimestamp(null);
         session.setExitTimestamp(exitTimestamp);
 
         return sessionDAO.updateSession(session);

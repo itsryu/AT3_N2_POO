@@ -36,7 +36,7 @@ public class ProfileDAO {
                 }
             }
 
-            return true;
+            return affectedRows > 0;
         } catch (SQLException e) {
             System.err.println("Error creating user profile: " + e.getMessage());
         }
